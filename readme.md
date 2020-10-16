@@ -8,7 +8,8 @@ Copy "thirdparty" folder into you mod folder, copy content of "zscript.zc" and "
 
 Now, inherit all your classes which you want to use as effect only from `generic_fast_effect` class, with next limitations
 
-```class fire_1 : generic_fast_effect
+```
+class fire_1 : generic_fast_effect
 {
     defaults
     {
@@ -23,6 +24,7 @@ Now, inherit all your classes which you want to use as effect only from `generic
             ball a 1;
         goto in_queue;//<-- this would allow actor to be cached
     }
-}```
+}
+```
 
 Then, to show this effect, use ``generic_effect_event.show_effect(effect name, position, velocity)`` (quite a long name, I working on it) to show such effect at specific position and with specific velocity. This function return pointer to actor, so you can also modify it after it was "spawned" through this function.
