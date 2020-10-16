@@ -1,0 +1,36 @@
+class generic_fast_effect : actor abstract
+{
+    //true -> actor show somehing, false -> not
+    protected bool in_action;
+    //getter and setter for in_action bool
+    bool is_active() const
+    {
+        return in_action;
+    }
+    void set_active()
+    {
+        in_action = true;
+    }
+
+    default
+    {
+        +noclip
+        +nointeraction
+    }
+
+    states
+    {
+        in_queue:
+            tnt1 a -1
+            {
+                vel = (0, 0, 0);
+                a_stopsound();
+                setorigin( (double.infinity, double.infinity, double.infinity), false);
+                in_action = false;
+                scale = default.scale;
+                alpha = default.alpha;
+                bnoclip = true;
+            }
+        stop;
+    }
+}

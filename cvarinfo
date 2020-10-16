@@ -1,0 +1,2 @@
+//used to track how much of specific effect actors there are in array
+server noarchive bool generic_fast_effect_debug = false;

@@ -1,0 +1,111 @@
+class generic_effect_event : eventhandler
+{
+    //store here array of arrays, each array of which should contain only actors of specific class
+    private array<effect_array_wrapper> existing_actors_by_type;
+    //used to store base actor class
+    //stored for thouse who want more advanced, and fast, control over effects
+    private array<generic_fast_effect> base_props;
+
+    //collect and create templates arrays for all existing classes that inherits
+    //directly or not, from generic_fast_effect class
+    override void onregister()
+    {
+        for(uint i = 0; i < allclasses.size(); i++)
+        {
+            if(allclasses[i] is 'generic_fast_effect' && allclasses[i] != 'generic_fast_effect')
+            {
+                let wrap = effect_array_wrapper(new("effect_array_wrapper"));
+                existing_actors_by_type.push(wrap);
+                wrap.prop_type = (class<actor>)(allclasses[i]);
+            }
+        }
+    }
+    //find free effect actor or create new if all actors are busy
+    private actor find_free_actor(class<actor> effect_type = null)
+    {
+        //no name -> no actor
+        if(!effect_type)
+            return null;
+
+        effect_array_wrapper specific_effect_type = null;
+
+        for(uint i = 0; i < existing_actors_by_type.size(); i++)
+        {
+            if(existing_actors_by_type[i])
+            {
+                if(effect_array_wrapper(existing_actors_by_type[i]).prop_type == effect_type)
+                {
+                    //if(generic_fast_effect_debug)
+                    //    console.printf("Fast effects: there are %i actors of %s type", effect_array_wrapper(existing_actors_by_type[i]).props.size(), effect_array_wrapper(existing_actors_by_type[i]).prop_type);
+                    specific_effect_type = effect_array_wrapper(existing_actors_by_type[i]);
+                    break;
+                }
+            }
+            else
+                throwabortexception("Fast effect handler : non existing array wrapper detected, name %s", effect_type);
+        }
+        actor free_effect = null;
+        for(uint i = 0; i <= specific_effect_type.props.size(); i++)
+        {
+            if(i == specific_effect_type.props.size() )
+            {
+                specific_effect_type.props.push(generic_fast_effect(actor.spawn(effect_type, (double.infinity, double.infinity, double.infinity) ) ) );
+                free_effect = specific_effect_type.props[i];
+                break;
+            }
+
+            if(specific_effect_type.props[i])
+            {
+                if(generic_fast_effect(specific_effect_type.props[i]).is_active() == false)
+                {
+                    free_effect = specific_effect_type.props[i];
+                    break;
+                }
+            }
+        }
+        
+        return free_effect;
+    }
+    //main function, should be called if you have pointer to this ecent
+    //move to specific position and set specific velocity to reused actor
+    actor reuse_effect(class<actor> effect_name = null, vector3 effect_pos = (0, 0, 0), vector3 effect_vel = (0, 0, 0), effect_reusing_flags flags = ERF_NONE )
+    {
+        if(!effect_name)
+            return null;
+
+        actor a = find_free_actor(effect_name);
+        if(a)
+        {
+            a.setorigin(effect_pos, false);
+            a.vel = effect_vel;
+            generic_fast_effect(a).set_active();
+            a.setstate(a.SpawnState);
+        }
+        return a;
+    }
+    //static function, main usage showing of effect from anywhere
+    //without obtaining pointer to this event
+    //use this to find and return some effect
+    static actor show_effect(class<actor> effect_name = null, vector3 effect_pos = (0, 0, 0), vector3 effect_vel = (0, 0, 0) )
+    {
+        if(!effect_name)
+            return null;
+
+        generic_effect_event michael_bay = generic_effect_event(eventhandler.find("generic_effect_event"));
+        //very serious error
+        if(!michael_bay)
+            throwabortexception("Fast effect handler: did not found effect event handler");
+
+        return michael_bay.reuse_effect(effect_name, effect_pos, effect_vel);
+    }
+}
+
+//dynamic array of arrays is impossible in Zscript
+//but wrappers for them are possible
+class effect_array_wrapper
+{
+    //name for the type of class this actor is store
+    class<actor> prop_type;
+    //array of effects
+    array<generic_fast_effect> props;
+}

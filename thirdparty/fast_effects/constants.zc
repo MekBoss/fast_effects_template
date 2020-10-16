@@ -1,0 +1,5 @@
+enum effect_reusing_flags
+{
+    ERF_NONE = 0,
+    ERF_BASE_CLASS = 1//treat actor name as base class for searching
+};

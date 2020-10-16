@@ -1,0 +1,4 @@
+gameinfo
+{
+    addeventhandlers="generic_effect_event"
+}
